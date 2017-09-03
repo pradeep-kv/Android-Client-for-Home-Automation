@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="in.pradeepmeti.bluetoothtest.MainActivity">
+
+    <ListView
+        android:layout_width="92dp"
+        android:layout_height="495dp"
+        android:visibility="invisible"
+        android:id="@+id/btDeviceListView"
+        tools:layout_editor_absoluteY="8dp"
+        tools:layout_editor_absoluteX="8dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hello World!"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="184dp" />
+
+    <android.support.constraint.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/guideline"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.04"
+        tools:layout_editor_absoluteY="0dp"
+        tools:layout_editor_absoluteX="16dp" />
+
+    <Button
+        android:id="@+id/btOnBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Turn on Bluetooth"
+        android:visibility="invisible"
+        tools:ignore="MissingConstraints"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btLocationBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enable Location"
+        android:visibility="invisible"
+        tools:layout_editor_absoluteX="119dp"
+        tools:layout_editor_absoluteY="231dp"
+        tools:ignore="MissingConstraints" />
+
+    <EditText
+        android:id="@+id/btSendText"
+        android:layout_width="376dp"
+        android:layout_height="125dp"
+        android:visibility="invisible"
+        android:ems="10"
+        android:inputType="text"
+        android:text="Send Tet"
+        tools:layout_editor_absoluteY="331dp"
+        tools:layout_editor_absoluteX="4dp" />
+
+    <Button
+        android:id="@+id/btDataSendBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        android:text="Send"
+        tools:layout_editor_absoluteY="455dp"
+        tools:layout_editor_absoluteX="148dp" />
+
+
+</android.support.constraint.ConstraintLayout>
