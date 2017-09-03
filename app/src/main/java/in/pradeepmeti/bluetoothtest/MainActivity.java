@@ -2,16 +2,19 @@ package in.pradeepmeti.bluetoothtest;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,6 +28,7 @@ import android.widget.Toast;
 import android.widget.Button;
 
 import java.util.ArrayList;
+import java.util.IllegalFormatException;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
@@ -35,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     EditText btSendText;
     private ArrayAdapter<String> btDevicesArrayAdapter;
     BluetoothHandlerClass btHandler;
+    ProgressDialog progress;
 
 //    Map<String, String[]> btDeviceArray = new HashMap<String, String[]>();
     ArrayList<BluetoothDevice> btDeviceArray = new ArrayList<>();
@@ -75,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-                btsendData();
+                btSendData();
             }
         });
 
@@ -225,8 +230,17 @@ public class MainActivity extends AppCompatActivity {
         if(btHandler.btState() == Constants.bt_Connection_State_Connected || btHandler.btState() ==Constants.bt_Connection_State_Connecting){
             btHandler.btCloseAllConnection();
         }
+
+        if(btHandler != null){
+            btHandler = null;
+        }
         btDeviceArray.clear();
-        btDevicesArrayAdapter.clear();
+        try {
+            btDevicesArrayAdapter.clear();
+        }catch (IllegalFormatException e){
+            e.printStackTrace();
+        }
+
         if(mBluetoothAdapter.isDiscovering()){
             mBluetoothAdapter.cancelDiscovery();
         }
@@ -311,11 +325,13 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void btOnConnecting() {
+                showProgressDialog(true,"Connecting To Bluetooth Device");
                 Log.v("btConnecting","Device");
             }
 
             @Override
             public void btOnConnected() {
+                showProgressDialog(false,"");
                 findViewById(R.id.btDeviceListView).setVisibility(View.INVISIBLE);
                 findViewById(R.id.btDataSendBtn).setVisibility(View.VISIBLE);
                 findViewById(R.id.btSendText).setVisibility(View.VISIBLE);
@@ -346,11 +362,46 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void btsendData(){
+    private void btSendData(){
         String btDataToSend = btSendText.getText().toString();
         btHandler.btMsgWrite(btDataToSend);
         btSendText.setText("");
     }
 
+    private void showProgressDialog(Boolean show, String msg){
+        if(show){
+            progress = new ProgressDialog(this);
+            progress.setTitle("Please Wait ");
+            progress.setMessage(msg);
+            progress.setCancelable(false); // disable dismiss by tapping outside of the dialog
+            progress.show();
+        }else{
+            progress.dismiss();
+        }
+    }
 
+    @Override
+    public void onBackPressed() {
+        AlertDialog.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
+        } else {
+            builder = new AlertDialog.Builder(this);
+        }
+        builder.setTitle("Close App")
+                .setMessage("Are you sure you want to close the app?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        btHandler.btCloseAllConnection();
+                        finish();
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
 }
