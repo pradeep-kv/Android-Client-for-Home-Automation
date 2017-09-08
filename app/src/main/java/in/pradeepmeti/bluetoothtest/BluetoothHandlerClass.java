@@ -29,7 +29,12 @@ class BluetoothHandlerClass {
         btConnectionThread.btConnect(device);
     }
 
-    public int btState(){return btConnectionThread.getBtState();}
+    public int btState(){
+        if(btConnectionThread != null){
+            return btConnectionThread.getBtState();
+        }
+        return Constants.bt_Connection_State_None;
+    }
 
     public void btMsgWrite(String data){
         if(btConnectionThread.getBtState() != Constants.bt_Connection_State_Connected) {
@@ -39,7 +44,10 @@ class BluetoothHandlerClass {
     }
 
     public void btCloseAllConnection(){
-        btConnectionThread.killEverything();
+        if(btConnectionThread !=null){
+            btConnectionThread.killEverything();
+        }
+
     }
 
     public void setBtListener(BluetoothListener listener){

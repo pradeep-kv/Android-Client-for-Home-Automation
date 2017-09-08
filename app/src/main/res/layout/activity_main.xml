@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,10 +8,21 @@
 
 
     <RelativeLayout
-        android:layout_width="368dp"
-        android:layout_height="495dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         tools:layout_editor_absoluteX="8dp"
-        tools:layout_editor_absoluteY="4dp">
+        tools:layout_editor_absoluteY="8dp">
+
+        <TextView
+            android:id="@+id/btNoDeviceTxt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="No Bluetooth Devices Found \n Scan Again."
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:visibility="invisible"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp" />
 
         <Button
             android:id="@+id/btOnBtn"
@@ -19,15 +30,9 @@
             android:layout_height="wrap_content"
             android:text="Turn on Bluetooth"
             android:visibility="invisible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="MissingConstraints"
-            android:layout_alignBaseline="@+id/btLocationBtn"
-            android:layout_alignBottom="@+id/btLocationBtn"
-            android:layout_toLeftOf="@+id/btDataSendBtn"
-            android:layout_toStartOf="@+id/btDataSendBtn" />
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:gravity="center" />
 
         <Button
             android:id="@+id/btLocationBtn"
@@ -35,38 +40,34 @@
             android:layout_height="wrap_content"
             android:text="Enable Location"
             android:visibility="invisible"
-            tools:ignore="MissingConstraints"
-            tools:layout_editor_absoluteX="119dp"
-            tools:layout_editor_absoluteY="231dp"
             android:layout_centerVertical="true"
-            android:layout_alignRight="@+id/btOnBtn"
-            android:layout_alignEnd="@+id/btOnBtn" />
+            android:layout_centerHorizontal="true"
+            android:gravity="center" />
 
         <ListView
             android:id="@+id/btDeviceListView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
+            android:visibility="invisible" />
+
+        <ProgressBar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/btScanProgress"
             android:visibility="invisible"
-            tools:layout_editor_absoluteX="8dp"
-            tools:layout_editor_absoluteY="8dp" />
+            android:layout_gravity="center_horizontal"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="24dp"/>
 
         <EditText
             android:id="@+id/btSendText"
-            android:layout_width="376dp"
+            android:layout_width="match_parent"
             android:layout_height="75dp"
             android:ems="10"
             android:inputType="text"
             android:hint="Enter Text to Send"
             android:text=""
-            android:visibility="invisible"
-            tools:layout_editor_absoluteX="4dp"
-            tools:layout_editor_absoluteY="331dp"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
+            android:visibility="invisible" />
 
         <Button
             android:id="@+id/btDataSendBtn"
@@ -81,7 +82,24 @@
             tools:layout_editor_absoluteX="148dp"
             tools:layout_editor_absoluteY="455dp" />
 
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/btScanBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/btSendText"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:clickable="true"
+            app:fabSize="normal"
+            app:srcCompat="@android:drawable/ic_search_category_default"
+            tools:layout_editor_absoluteY="455dp"
+            tools:layout_editor_absoluteX="328dp"
+            android:layout_marginRight="24dp"
+            android:layout_marginBottom="24dp"/>
+
     </RelativeLayout>
 
 
-</android.support.constraint.ConstraintLayout>
+
+
+</RelativeLayout>

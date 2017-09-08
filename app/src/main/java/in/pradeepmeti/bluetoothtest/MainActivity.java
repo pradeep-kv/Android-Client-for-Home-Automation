@@ -13,6 +13,8 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -27,7 +29,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Button;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.IllegalFormatException;
 import java.util.Set;
 
@@ -40,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayAdapter<String> btDevicesArrayAdapter;
     BluetoothHandlerClass btHandler;
     ProgressDialog progress;
+    FloatingActionButton btScanBtn;
 
 //    Map<String, String[]> btDeviceArray = new HashMap<String, String[]>();
     ArrayList<BluetoothDevice> btDeviceArray = new ArrayList<>();
@@ -54,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
         btDataSendBtn = (Button) findViewById(R.id.btDataSendBtn);
         btHandler = BluetoothHandlerClass.getInstance();
         btSendText = (EditText)findViewById(R.id.btSendText);
+        btScanBtn = (FloatingActionButton) findViewById(R.id.btScanBtn);
+        btScanBtn.hide();
 
         if (mBluetoothAdapter == null) {
             // Device does not support Bluetooth
@@ -88,6 +95,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 checkCoarseLocation();
+            }
+        });
+
+        btScanBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startBTDeviceDiscovery();
             }
         });
     }
@@ -130,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 checkCoarseLocation();
             }else{
                 startBTDeviceDiscovery();
@@ -140,7 +154,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Create a BroadcastReceiver for ACTION_FOUND.
     private final BroadcastReceiver btDisconnect = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -172,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
         if(startDiscovery){
             Log.v("D1", "Device Discovery Started.");
             Toast.makeText(getApplicationContext(), "Device Discovery Started.", Toast.LENGTH_SHORT).show();
-
+            findViewById(R.id.btScanProgress).setVisibility(View.VISIBLE);
             btDevicesArrayAdapter = new ArrayAdapter<String>(this, R.layout.btdevicenameview);
             // Find and set up the ListView for newly discovered devices
             ListView btDeviceListView = (ListView) findViewById(R.id.btDeviceListView);
@@ -182,8 +195,9 @@ public class MainActivity extends AppCompatActivity {
             // if discovery started then Register for broadcasts when a device is discovered.
             IntentFilter filter =  new IntentFilter(BluetoothDevice.ACTION_FOUND);
             filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-//            filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
             registerReceiver(mReceiver, filter);
+            btScanBtn.hide();
+            findViewById(R.id.btNoDeviceTxt).setVisibility(View.INVISIBLE);
         }
     }
 
@@ -202,77 +216,57 @@ public class MainActivity extends AppCompatActivity {
                 // Discovery has found a device. Get the BluetoothDevice
                 // object and its info from the Intent.
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                String deviceName = String.valueOf(device.getName());
-                String deviceHardwareAddress = device.getAddress(); // MAC address
-                //check if the discovered device is listed if not add to the list.....
-                if(deviceName.length() == 0){
-                    deviceName = "Test";
-                }
-                if(deviceName == "null"){
-                    deviceName = "Test";
-                }
-
-                btDeviceArray.add(device);
-                btDevicesArrayAdapter.add(deviceName);
-                btDevicesArrayAdapter.notifyDataSetChanged();
-
-                //Log.v("MAC Address",deviceHardwareAddress);
-                //Log.v("Device Name",deviceName);
+                btDeviceFound(device);
             }else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)){
                 deviceDiscoveryStopped();
             }
         }
     };
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if(btHandler.btState() == Constants.bt_Connection_State_Connected || btHandler.btState() ==Constants.bt_Connection_State_Connecting){
-            btHandler.btCloseAllConnection();
+    private void btDeviceFound(BluetoothDevice device){
+        String deviceName = String.valueOf(device.getName());
+        //String deviceHardwareAddress = device.getAddress(); // MAC address
+        //check if the discovered device is listed if not add to the list.....
+        if(deviceName.length() == 0){
+            deviceName = "Test";
+        }
+        if(deviceName == "null"){
+            deviceName = "Test";
         }
 
-        if(btHandler != null){
-            btHandler = null;
-        }
-        btDeviceArray.clear();
-        try {
-            btDevicesArrayAdapter.clear();
-        }catch (IllegalFormatException e){
-            e.printStackTrace();
-        }
-
-        if(mBluetoothAdapter.isDiscovering()){
-            mBluetoothAdapter.cancelDiscovery();
-        }
-        // Don't forget to unregister the ACTION_FOUND receiver.
-        try {
-            if (mReceiver!=null) {
-                unregisterReceiver(mReceiver);
-                Log.v("mReceiver"," service unregistered");
+        if(btDeviceArray != null){
+            if(Arrays.asList(btDeviceArray).contains(device)){
+                return;
             }
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
         }
 
-        try{
-            if(btDisconnect != null){
-                unregisterReceiver(btDisconnect);
-                Log.v("btDisconnect"," service unregistered");
-            }
-        }catch (IllegalArgumentException e){
-            e.printStackTrace();
-        }
+        btDeviceArray.add(device);
+        btDevicesArrayAdapter.add(deviceName);
+        btDevicesArrayAdapter.notifyDataSetChanged();
+
+        //Log.v("MAC Address",deviceHardwareAddress);
+        Log.v("Device Name",deviceName);
+        return;
     }
 
     protected void deviceDiscoveryStopped(){
         if(mBluetoothAdapter.isDiscovering()){
             mBluetoothAdapter.cancelDiscovery();
         }
+        // Don't forget to unregister the ACTION_FOUND receiver.
+        unregisterReceiver(mReceiver);
         Log.v("D2", "Device Discovery Finished.");
         Log.v("D2", btDeviceArray.toString());
         Toast.makeText(getApplicationContext(), "Device Discovery Finished.", Toast.LENGTH_SHORT).show();
-        // Don't forget to unregister the ACTION_FOUND receiver.
-        unregisterReceiver(mReceiver);
+        //Show btScan Button....
+        btScanBtn.show();
+
+        findViewById(R.id.btScanProgress).setVisibility(View.INVISIBLE);
+        //No device found then show No device found text & hide device list view....
+        if(btDeviceArray.size() == 0){
+            findViewById(R.id.btDeviceListView).setVisibility(View.INVISIBLE);
+            findViewById(R.id.btNoDeviceTxt).setVisibility(View.VISIBLE);
+        }
     }
 
     protected void checkCoarseLocation(){
@@ -303,6 +297,7 @@ public class MainActivity extends AppCompatActivity {
                 if(mBluetoothAdapter.isDiscovering()){
                     mBluetoothAdapter.cancelDiscovery();
                 }
+                findViewById(R.id.btScanProgress).setVisibility(View.INVISIBLE);
                 String selectedBtDeviceName = ((TextView) v).getText().toString();
 //                selectedBtDeviceMACAddress = btDeviceArray.get(itemPosition);
 //                Log.v("MAC Address", String.valueOf(selectedBtDeviceMACAddress));
@@ -316,6 +311,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private void btStartConnection(BluetoothDevice device){
+
         btHandler.setBtListener(new BluetoothHandlerClass.BluetoothListener(){
 
             @Override
@@ -325,6 +321,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void btOnConnecting() {
+                btScanBtn.hide();
                 showProgressDialog(true,"Connecting To Bluetooth Device");
                 Log.v("btConnecting","Device");
             }
@@ -392,7 +389,9 @@ public class MainActivity extends AppCompatActivity {
                 .setMessage("Are you sure you want to close the app?")
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        btHandler.btCloseAllConnection();
+                        if(btHandler != null){
+                            btHandler.btCloseAllConnection();
+                        }
                         finish();
                     }
                 })
@@ -403,5 +402,43 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(btHandler != null){
+            if(btHandler.btState() == Constants.bt_Connection_State_Connected || btHandler.btState() ==Constants.bt_Connection_State_Connecting){
+                btHandler.btCloseAllConnection();
+            }
+            btHandler = null;
+        }
+        btDeviceArray.clear();
+        if(btDevicesArrayAdapter != null){
+            btDevicesArrayAdapter.clear();
+        }
+
+
+        if(mBluetoothAdapter.isDiscovering()){
+            mBluetoothAdapter.cancelDiscovery();
+        }
+        // Don't forget to unregister the ACTION_FOUND receiver.
+        try {
+            if (mReceiver!=null) {
+                unregisterReceiver(mReceiver);
+                Log.v("mReceiver"," service unregistered");
+            }
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+
+        try{
+            if(btDisconnect != null){
+                unregisterReceiver(btDisconnect);
+                Log.v("btDisconnect"," service unregistered");
+            }
+        }catch (IllegalArgumentException e){
+            e.printStackTrace();
+        }
     }
 }
